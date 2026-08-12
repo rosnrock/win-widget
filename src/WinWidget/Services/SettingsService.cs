@@ -54,6 +54,7 @@ public sealed class SettingsService
 
     private static void Migrate(ApplicationSettings settings)
     {
+        var sourceSchemaVersion = settings.SchemaVersion;
         settings.Widgets ??= [];
         if (!double.IsFinite(settings.GridSize) || settings.GridSize < 4) settings.GridSize = 16;
         var ids = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -83,6 +84,13 @@ public sealed class SettingsService
             widget.BackgroundOpacity = double.IsFinite(widget.BackgroundOpacity)
                 ? Math.Clamp(widget.BackgroundOpacity, 0, 1)
                 : 0;
+            if (sourceSchemaVersion < 4 && widget.Kind == WidgetKind.Weather)
+            {
+                // v4 aligns the weather card with the clock card. Migrate the old
+                // 320 x 240 weather geometry once while keeping its screen position.
+                widget.Width = 440;
+                widget.Height = 210;
+            }
             NormalizeGeometry(widget);
             migratedWidgets.Add(widget);
         }
@@ -98,7 +106,7 @@ public sealed class SettingsService
             WidgetKind.Clock => (440d, 80d, 440d, 210d, 240d, 120d),
             WidgetKind.Calendar => (70d, 170d, 230d, 220d, 180d, 160d),
             WidgetKind.Notes => (70d, 420d, 300d, 170d, 220d, 92d),
-            WidgetKind.Weather => (340d, 320d, 320d, 240d, 260d, 210d),
+            WidgetKind.Weather => (340d, 320d, 440d, 210d, 440d, 210d),
             _ => (80d, 80d, 320d, 180d, 120d, 80d)
         };
 

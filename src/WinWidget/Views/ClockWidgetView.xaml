@@ -3,17 +3,16 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              IsHitTestVisible="False">
     <Grid Margin="3,0">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="Auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="Auto" />
-        </Grid.RowDefinitions>
-        <TextBlock x:Name="DateLabel" Style="{StaticResource WidgetEyebrow}" />
-        <TextBlock x:Name="TimeLabel" Grid.Row="1" Margin="-3,-10,0,-7"
-                   VerticalAlignment="Center" FontFamily="{StaticResource WidgetFont}"
-                   FontSize="104" FontWeight="SemiBold"
-                   TextOptions.TextFormattingMode="Display" />
-        <TextBlock x:Name="DayHintLabel" Grid.Row="2" Style="{StaticResource WidgetLabel}"
-                   FontSize="14" Opacity="0.58" />
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <TextBlock x:Name="DateLabel" HorizontalAlignment="Center" TextAlignment="Center"
+                       Style="{StaticResource WidgetEyebrow}" />
+            <TextBlock x:Name="TimeLabel" Margin="0,-10,0,-7"
+                       HorizontalAlignment="Center" TextAlignment="Center"
+                       FontFamily="{StaticResource WidgetFont}"
+                       FontSize="104" FontWeight="SemiBold"
+                       TextOptions.TextFormattingMode="Display" />
+            <TextBlock x:Name="DayHintLabel" HorizontalAlignment="Center" TextAlignment="Center"
+                       Style="{StaticResource WidgetLabel}" FontSize="14" Opacity="0.58" />
+        </StackPanel>
     </Grid>
 </UserControl>

@@ -242,7 +242,7 @@ public sealed class WidgetWindowManager
             WidgetKind.Clock => (440, 210),
             WidgetKind.Calendar => (230, 220),
             WidgetKind.Notes => (300, 170),
-            WidgetKind.Weather => (320, 240),
+            WidgetKind.Weather => (440, 210),
             _ => (320, 180)
         };
         return settings;
