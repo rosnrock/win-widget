@@ -34,12 +34,15 @@
                            FontSize="13" Foreground="#A6202124" />
             </StackPanel>
             <Button Grid.Column="1" x:Name="AddButton" Content="＋  Добавить" Style="{StaticResource PrimaryButton}"
-                    Height="40" MinWidth="126" Click="OnAddClick" />
-            <ContextMenu x:Name="AddMenu">
-                <MenuItem Header="Дата и время" Tag="Clock" Click="OnAddWidgetClick" />
-                <MenuItem Header="Календарь" Tag="Calendar" Click="OnAddWidgetClick" />
-                <MenuItem Header="Текстовая заметка" Tag="Notes" Click="OnAddWidgetClick" />
-            </ContextMenu>
+                    Height="40" MinWidth="126" Click="OnAddClick">
+                <Button.ContextMenu>
+                    <ContextMenu>
+                        <MenuItem Header="Дата и время" Tag="Clock" Click="OnAddWidgetClick" />
+                        <MenuItem Header="Календарь" Tag="Calendar" Click="OnAddWidgetClick" />
+                        <MenuItem Header="Текстовая заметка" Tag="Notes" Click="OnAddWidgetClick" />
+                    </ContextMenu>
+                </Button.ContextMenu>
+            </Button>
         </Grid>
 
         <Grid Grid.Row="2">

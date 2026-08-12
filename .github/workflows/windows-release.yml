@@ -57,6 +57,35 @@ jobs:
           -p:DebugType=None
           -p:DebugSymbols=false
 
+      - name: Smoke-test application startup
+        shell: pwsh
+        run: |
+          $smokeProfile = Join-Path $env:RUNNER_TEMP "winwidget-startup-smoke"
+          $localAppData = Join-Path $smokeProfile "LocalAppData"
+          New-Item -ItemType Directory -Force -Path $localAppData | Out-Null
+          $previousLocalAppData = $env:LOCALAPPDATA
+          $process = $null
+          try {
+            $env:LOCALAPPDATA = $localAppData
+            $process = Start-Process -FilePath "$env:PUBLISH_DIR\WinWidget.exe" -PassThru
+            Start-Sleep -Seconds 5
+            $process.Refresh()
+            $crashLog = Join-Path $localAppData "WinWidget\crash.log"
+            if ($process.HasExited) {
+              throw "WinWidget exited during startup smoke test with code $($process.ExitCode)."
+            }
+            if (Test-Path $crashLog) {
+              Get-Content $crashLog | Write-Error
+              throw "WinWidget created a crash log during startup smoke test."
+            }
+          }
+          finally {
+            $env:LOCALAPPDATA = $previousLocalAppData
+            if ($null -ne $process -and -not $process.HasExited) {
+              Stop-Process -Id $process.Id -Force
+            }
+          }
+
       - name: Install Inno Setup
         run: choco install innosetup --no-progress --yes
 

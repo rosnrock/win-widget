@@ -78,8 +78,9 @@ public partial class ControlCenterWindow : Window
 
     private void OnAddClick(object sender, RoutedEventArgs e)
     {
-        AddMenu.PlacementTarget = AddButton;
-        AddMenu.IsOpen = true;
+        if (AddButton.ContextMenu is not { } menu) return;
+        menu.PlacementTarget = AddButton;
+        menu.IsOpen = true;
     }
 
     private void OnAddWidgetClick(object sender, RoutedEventArgs e)
