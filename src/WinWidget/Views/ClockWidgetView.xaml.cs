@@ -22,5 +22,6 @@ public partial class ClockWidgetView : UserControl
         var culture = CultureInfo.CurrentUICulture;
         DateLabel.Text = now.ToString("dddd, MMMM d", culture);
         TimeLabel.Text = now.ToString("H:mm", culture);
+        DayHintLabel.Text = now.ToString("yyyy", culture);
     }
 }

@@ -39,7 +39,7 @@ public partial class CalendarWidgetView : UserControl
         for (var i = 0; i < 7; i++)
         {
             var day = (DayOfWeek)(((int)firstDay + i) % 7);
-            WeekdayGrid.Children.Add(CreateText(culture.DateTimeFormat.GetAbbreviatedDayName(day)[..1], 11, 0.72));
+            WeekdayGrid.Children.Add(CreateText(culture.DateTimeFormat.GetAbbreviatedDayName(day)[..1].ToUpper(culture), 11, 0.62));
         }
 
         var first = new DateTime(today.Year, today.Month, 1);
@@ -47,12 +47,15 @@ public partial class CalendarWidgetView : UserControl
         for (var cell = 0; cell < 42; cell++)
         {
             var date = first.AddDays(cell - offset);
-            var label = CreateText(date.Day.ToString(culture), 12, date.Month == today.Month ? 1 : 0.28);
-            var host = new Border { Width = 26, Height = 27, CornerRadius = new CornerRadius(14), Child = label };
+            var label = CreateText(date.Day.ToString(culture), 13, date.Month == today.Month ? 0.94 : 0.25);
+            var host = new Border { Width = 27, Height = 27, CornerRadius = new CornerRadius(14), Child = label };
             if (date == today)
             {
-                host.Background = new SolidColorBrush(Color.FromRgb(35, 71, 139));
-                label.Foreground = Brushes.White;
+                host.Background = new SolidColorBrush(Color.FromArgb(58, 255, 255, 255));
+                host.BorderBrush = new SolidColorBrush(Color.FromArgb(88, 255, 255, 255));
+                host.BorderThickness = new Thickness(1);
+                label.FontWeight = FontWeights.Bold;
+                label.Opacity = 1;
             }
             DaysGrid.Children.Add(host);
         }

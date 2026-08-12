@@ -12,6 +12,7 @@ public sealed class WidgetWindowManager
     private readonly ApplicationSettings _settings;
     private readonly List<WidgetWindow> _windows = [];
     private readonly AppearanceWindow _appearanceWindow = new();
+    private readonly WeatherService _weatherService = new();
     private readonly DispatcherTimer _saveTimer = new() { Interval = TimeSpan.FromMilliseconds(350) };
 
     public IReadOnlyList<WidgetWindow> Windows => _windows;
@@ -143,6 +144,15 @@ public sealed class WidgetWindowManager
         WidgetsChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    public void RefreshWeather(string id)
+    {
+        var window = FindWindow(id);
+        if (window?.Content is not Border { Child: WeatherWidgetView weatherView }) return;
+        _ = weatherView.RefreshAsync();
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
     public void SetGrid(bool enabled, double gridSize)
     {
         _settings.SnapToGrid = enabled;
@@ -178,6 +188,7 @@ public sealed class WidgetWindowManager
             WidgetKind.Clock => new ClockWidgetView(),
             WidgetKind.Calendar => new CalendarWidgetView(),
             WidgetKind.Notes => CreateNotesView(settings),
+            WidgetKind.Weather => new WeatherWidgetView(settings, _weatherService, ScheduleSave),
             _ => throw new ArgumentOutOfRangeException(nameof(settings.Kind))
         };
         var window = new WidgetWindow(settings, content);
@@ -219,13 +230,19 @@ public sealed class WidgetWindowManager
             Kind = kind,
             DisplayName = DefaultDisplayName(kind, number),
             Left = 70 + ((_settings.Widgets.Count * 36) % 360),
-            Top = 80 + ((_settings.Widgets.Count * 36) % 240)
+            Top = 80 + ((_settings.Widgets.Count * 36) % 240),
+            // New widgets start as soft, dark macOS-style cards. These values are
+            // assigned only at creation, so saved user colours remain untouched.
+            BackgroundColor = "#10244A",
+            TextColor = "#E8EDF9",
+            BackgroundOpacity = 0.86
         };
         (settings.Width, settings.Height) = kind switch
         {
             WidgetKind.Clock => (440, 210),
             WidgetKind.Calendar => (230, 220),
             WidgetKind.Notes => (300, 170),
+            WidgetKind.Weather => (320, 240),
             _ => (320, 180)
         };
         return settings;
@@ -233,7 +250,7 @@ public sealed class WidgetWindowManager
 
     private static string DefaultDisplayName(WidgetKind kind, int number)
     {
-        var name = kind switch { WidgetKind.Clock => "Часы", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Заметка", _ => "Виджет" };
+        var name = kind switch { WidgetKind.Clock => "Часы", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Заметка", WidgetKind.Weather => "Погода", _ => "Виджет" };
         return number == 1 ? name : $"{name} {number}";
     }
 

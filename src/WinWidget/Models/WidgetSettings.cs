@@ -16,4 +16,16 @@ public sealed class WidgetSettings
     public bool IsLocked { get; set; }
     public bool IsAlwaysOnTop { get; set; }
     public string Text { get; set; } = string.Empty;
+    public string Location { get; set; } = "Москва";
+    public WeatherCache? WeatherCache { get; set; }
+}
+
+public sealed class WeatherCache
+{
+    public string Location { get; set; } = string.Empty;
+    public double Temperature { get; set; }
+    public double MinimumTemperature { get; set; }
+    public double MaximumTemperature { get; set; }
+    public int WeatherCode { get; set; }
+    public DateTimeOffset UpdatedAt { get; set; }
 }

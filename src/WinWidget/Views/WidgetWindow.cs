@@ -13,6 +13,7 @@ namespace WinWidget.Views;
 public sealed class WidgetWindow : Window
 {
     private readonly Border _surface;
+    private readonly bool _usesDedicatedDragHandle;
     private bool _allowClose;
 
     public WidgetSettings Settings { get; }
@@ -34,11 +35,18 @@ public sealed class WidgetWindow : Window
         WindowBehaviorService.ConfigureWidgetWindow(this);
         _surface = new Border
         {
-            Padding = new Thickness(8),
-            CornerRadius = new CornerRadius(8),
+            Padding = new Thickness(22),
+            CornerRadius = new CornerRadius(32),
+            BorderBrush = new SolidColorBrush(Color.FromArgb(82, 169, 196, 245)),
+            BorderThickness = new Thickness(1),
             Child = content
         };
         Content = _surface;
+        if (content is NotesWidgetView notes)
+        {
+            _usesDedicatedDragHandle = true;
+            notes.DragRequested += OnNotesDragRequested;
+        }
         ApplyAppearance();
 
         PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
@@ -53,8 +61,11 @@ public sealed class WidgetWindow : Window
     {
         TextElement.SetForeground(_surface, new SolidColorBrush(ParseColor(Settings.TextColor, Color.FromRgb(35, 71, 139))));
         var background = ParseColor(Settings.BackgroundColor, Colors.White);
-        background.A = (byte)Math.Round(255 * Math.Clamp(Settings.BackgroundOpacity, 0, 1));
+        var backgroundOpacity = Math.Clamp(Settings.BackgroundOpacity, 0, 1);
+        background.A = (byte)Math.Round(255 * backgroundOpacity);
         _surface.Background = new SolidColorBrush(background);
+        _surface.BorderBrush = new SolidColorBrush(Color.FromArgb(
+            (byte)Math.Round(82 * backgroundOpacity), 169, 196, 245));
         Topmost = Settings.IsAlwaysOnTop;
         ApplyInteractionState();
     }
@@ -70,9 +81,20 @@ public sealed class WidgetWindow : Window
 
     private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
     {
-        if (Settings.IsLocked || e.ChangedButton != MouseButton.Left || IsTextEditingTarget(e.OriginalSource as DependencyObject))
+        if (_usesDedicatedDragHandle || Settings.IsLocked || e.ChangedButton != MouseButton.Left ||
+            IsTextEditingTarget(e.OriginalSource as DependencyObject))
             return;
 
+        DragWindow();
+    }
+
+    private void OnNotesDragRequested(object sender, MouseButtonEventArgs e)
+    {
+        if (!Settings.IsLocked) DragWindow();
+    }
+
+    private void DragWindow()
+    {
         try
         {
             DragMove();

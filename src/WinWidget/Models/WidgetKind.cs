@@ -4,5 +4,6 @@ public enum WidgetKind
 {
     Clock,
     Calendar,
-    Notes
+    Notes,
+    Weather
 }

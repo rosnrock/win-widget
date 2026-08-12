@@ -2,19 +2,28 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <FontFamily x:Key="WidgetFont">Segoe UI Variable Display, Segoe UI</FontFamily>
     <FontFamily x:Key="WidgetTextFont">Segoe UI Variable Text, Segoe UI</FontFamily>
-    <SolidColorBrush x:Key="WidgetTextBrush" Color="#23478B" />
-    <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="Transparent" />
+    <SolidColorBrush x:Key="WidgetTextBrush" Color="#E8EDF9" />
+    <SolidColorBrush x:Key="WidgetSurfaceBrush" Color="#D9162A52" />
 
     <Style x:Key="WidgetSurface" TargetType="Border">
         <Setter Property="Background" Value="{StaticResource WidgetSurfaceBrush}" />
-        <Setter Property="CornerRadius" Value="18" />
-        <Setter Property="Padding" Value="18" />
+        <Setter Property="CornerRadius" Value="32" />
+        <Setter Property="Padding" Value="22" />
+        <Setter Property="BorderBrush" Value="#52A9C4F5" />
+        <Setter Property="BorderThickness" Value="1" />
         <Setter Property="TextElement.Foreground" Value="{StaticResource WidgetTextBrush}" />
     </Style>
 
     <Style x:Key="WidgetLabel" TargetType="TextBlock">
         <Setter Property="FontFamily" Value="{StaticResource WidgetTextFont}" />
         <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+    </Style>
+
+    <Style x:Key="WidgetEyebrow" TargetType="TextBlock" BasedOn="{StaticResource WidgetLabel}">
+        <Setter Property="FontSize" Value="15" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Opacity" Value="0.78" />
     </Style>
 
     <Style x:Key="SettingsButton" TargetType="Button">

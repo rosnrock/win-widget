@@ -27,13 +27,14 @@ public partial class App : Application
             _singleInstance = new SingleInstanceService();
             if (!_singleInstance.IsPrimaryInstance)
             {
-                MessageBox.Show("WinWidget is already running.", "WinWidget");
                 Shutdown();
                 return;
             }
 
             _widgetWindows = new WidgetWindowManager(new SettingsService());
             _controlCenter = new ControlCenterWindow(_widgetWindows);
+            _singleInstance.ActivationRequested += OnActivationRequested;
+            _singleInstance.StartListening();
             _tray = new TrayIconService();
             _tray.OpenRequested += (_, _) =>
             {
@@ -50,6 +51,11 @@ public partial class App : Application
             HandleFatalException(exception);
         }
     }
+
+    private void OnActivationRequested(object? sender, EventArgs e) => Dispatcher.BeginInvoke(() =>
+    {
+        _controlCenter?.ShowAndActivate();
+    });
 
     private void OnDispatcherUnhandledException(object sender, DispatcherUnhandledExceptionEventArgs e)
     {
@@ -100,6 +106,7 @@ public partial class App : Application
     protected override void OnExit(ExitEventArgs e)
     {
         DispatcherUnhandledException -= OnDispatcherUnhandledException;
+        if (_singleInstance is not null) _singleInstance.ActivationRequested -= OnActivationRequested;
         _tray?.Dispose();
         _singleInstance?.Dispose();
         base.OnExit(e);

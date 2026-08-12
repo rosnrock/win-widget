@@ -79,6 +79,7 @@ public sealed class SettingsService
             widget.TextColor = NormalizeColor(widget.TextColor, "#23478B");
             widget.BackgroundColor = NormalizeColor(widget.BackgroundColor, "#FFFFFF");
             widget.Text ??= string.Empty;
+            widget.Location = string.IsNullOrWhiteSpace(widget.Location) ? "Москва" : widget.Location.Trim();
             widget.BackgroundOpacity = double.IsFinite(widget.BackgroundOpacity)
                 ? Math.Clamp(widget.BackgroundOpacity, 0, 1)
                 : 0;
@@ -97,6 +98,7 @@ public sealed class SettingsService
             WidgetKind.Clock => (440d, 80d, 440d, 210d, 240d, 120d),
             WidgetKind.Calendar => (70d, 170d, 230d, 220d, 180d, 160d),
             WidgetKind.Notes => (70d, 420d, 300d, 170d, 220d, 92d),
+            WidgetKind.Weather => (340d, 320d, 320d, 240d, 260d, 210d),
             _ => (80d, 80d, 320d, 180d, 120d, 80d)
         };
 
@@ -122,6 +124,7 @@ public sealed class SettingsService
             WidgetKind.Clock => "Часы",
             WidgetKind.Calendar => "Календарь",
             WidgetKind.Notes => "Заметка",
+            WidgetKind.Weather => "Погода",
             _ => "Виджет"
         };
         return number == 1 ? baseName : $"{baseName} {number}";

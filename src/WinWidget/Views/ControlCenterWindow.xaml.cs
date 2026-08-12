@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Input;
 using WinWidget.Models;
 using WinWidget.Services;
 
@@ -68,12 +69,18 @@ public partial class ControlCenterWindow : Window
         AppearancePanel.IsEnabled = hasSelection;
         VisibilityButton.IsEnabled = hasSelection;
         NoSelectionHint.Visibility = hasSelection ? Visibility.Collapsed : Visibility.Visible;
-        if (selected is null) return;
+        if (selected is null)
+        {
+            WeatherSettingsPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
 
         VisibilityButton.Content = selected.IsVisible ? "Скрыть" : "Показать";
         AppearancePanel.Title = selected.DisplayName;
         AppearancePanel.SetAppearance(ParseColor(selected.Settings.TextColor, Color.FromRgb(35, 71, 139)),
             ParseColor(selected.Settings.BackgroundColor, Colors.White), selected.Settings.BackgroundOpacity);
+        WeatherSettingsPanel.Visibility = selected.Settings.Kind == WidgetKind.Weather ? Visibility.Visible : Visibility.Collapsed;
+        WeatherLocationTextBox.Text = selected.Settings.Location;
     }
 
     private void OnAddClick(object sender, RoutedEventArgs e)
@@ -144,6 +151,33 @@ public partial class ControlCenterWindow : Window
 
     private void OnAlignAllClick(object sender, RoutedEventArgs e) => _manager.AlignAllToGrid();
 
+    private void OnWeatherLocationChanged(object sender, RoutedEventArgs e) => ApplyWeatherLocation();
+    private void OnWeatherLocationKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Enter) return;
+        ApplyWeatherLocation();
+        Keyboard.ClearFocus();
+    }
+
+    private void ApplyWeatherLocation()
+    {
+        if (_isRefreshing || SelectedItem is not { Settings.Kind: WidgetKind.Weather } item) return;
+        var value = WeatherLocationTextBox.Text.Trim();
+        if (value.Length == 0)
+        {
+            WeatherLocationTextBox.Text = item.Settings.Location;
+            return;
+        }
+        if (string.Equals(value, item.Settings.Location, StringComparison.Ordinal))
+        {
+            WeatherLocationTextBox.Text = item.Settings.Location;
+            return;
+        }
+        item.Settings.Location = value;
+        item.Settings.WeatherCache = null;
+        _manager.RefreshWeather(item.Id);
+    }
+
     private void OnWidgetsChanged(object? sender, EventArgs e)
     {
         if (!_isApplyingAppearance) Dispatcher.Invoke(() => RefreshList());
@@ -167,7 +201,7 @@ public partial class ControlCenterWindow : Window
         string Status, Brush StatusBackground, Brush StatusForeground, WidgetSettings Settings)
     {
         public static WidgetListItem From(WidgetSettings settings) => new(settings.Id, settings.DisplayName,
-            settings.Kind switch { WidgetKind.Clock => "Дата и время", WidgetKind.Calendar => "Календарь", _ => "Текстовая заметка" },
+            settings.Kind switch { WidgetKind.Clock => "Дата и время", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Текстовая заметка", WidgetKind.Weather => "Погода", _ => "Виджет" },
             settings.IsVisible, settings.IsVisible ? "На экране" : "Скрыт",
             new SolidColorBrush(settings.IsVisible ? Color.FromRgb(231, 244, 236) : Color.FromRgb(240, 241, 243)),
             new SolidColorBrush(settings.IsVisible ? Color.FromRgb(45, 109, 70) : Color.FromRgb(99, 103, 110)), settings);

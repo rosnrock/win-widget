@@ -1,0 +1,23 @@
+<UserControl x:Class="WinWidget.Views.WeatherWidgetView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             IsHitTestVisible="False">
+    <Grid Margin="16,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="LocationLabel" FontSize="24" FontWeight="SemiBold" TextTrimming="CharacterEllipsis" />
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="*"/><ColumnDefinition Width="Auto"/></Grid.ColumnDefinitions>
+            <TextBlock x:Name="TemperatureLabel" FontSize="68" FontWeight="Light" VerticalAlignment="Center" />
+            <TextBlock x:Name="WeatherIcon" Grid.Column="1" FontSize="46" VerticalAlignment="Center" />
+        </Grid>
+        <StackPanel Grid.Row="2">
+            <TextBlock x:Name="ConditionLabel" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" />
+            <TextBlock x:Name="RangeLabel" Margin="0,4,0,0" FontSize="16" />
+            <TextBlock x:Name="StatusLabel" Margin="0,4,0,0" FontSize="10" Opacity="0.7" />
+        </StackPanel>
+    </Grid>
+</UserControl>
