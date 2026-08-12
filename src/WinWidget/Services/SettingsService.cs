@@ -36,10 +36,30 @@ public sealed class SettingsService
 
     public void Save(ApplicationSettings settings)
     {
-        var directory = Path.GetDirectoryName(_settingsPath)!;
-        Directory.CreateDirectory(directory);
         var temporaryPath = _settingsPath + ".tmp";
-        File.WriteAllText(temporaryPath, JsonSerializer.Serialize(settings, JsonOptions));
-        File.Move(temporaryPath, _settingsPath, true);
+        try
+        {
+            var directory = Path.GetDirectoryName(_settingsPath);
+            if (!string.IsNullOrEmpty(directory)) Directory.CreateDirectory(directory);
+            File.WriteAllText(temporaryPath, JsonSerializer.Serialize(settings, JsonOptions));
+            File.Move(temporaryPath, _settingsPath, true);
+        }
+        catch (IOException)
+        {
+            // A transient filesystem failure must not terminate the desktop process.
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // Keep the current in-memory settings when the profile is not writable.
+        }
+        finally
+        {
+            try
+            {
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+            }
+            catch (IOException) { }
+            catch (UnauthorizedAccessException) { }
+        }
     }
 }

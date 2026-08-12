@@ -1,0 +1,120 @@
+using System.ComponentModel;
+using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Documents;
+using System.Windows.Input;
+using System.Windows.Media;
+using WinWidget.Models;
+using WinWidget.Services;
+
+namespace WinWidget.Views;
+
+public sealed class WidgetWindow : Window
+{
+    private readonly Border _surface;
+    private bool _allowClose;
+
+    public WidgetSettings Settings { get; }
+    public event EventHandler? Selected;
+    public event EventHandler? GeometryChanged;
+
+    public WidgetWindow(WidgetSettings settings, UserControl content)
+    {
+        Settings = settings;
+        Title = $"WinWidget — {settings.Kind}";
+        Width = settings.Width;
+        Height = settings.Height;
+        Left = settings.Left;
+        Top = settings.Top;
+        Topmost = settings.IsAlwaysOnTop;
+
+        WindowBehaviorService.ConfigureWidgetWindow(this);
+        _surface = new Border
+        {
+            Padding = new Thickness(8),
+            CornerRadius = new CornerRadius(8),
+            Child = content
+        };
+        Content = _surface;
+        ApplyAppearance();
+
+        PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
+        MouseRightButtonUp += (_, _) => Selected?.Invoke(this, EventArgs.Empty);
+        LocationChanged += (_, _) => CaptureGeometry();
+        SizeChanged += (_, _) => CaptureGeometry();
+        Closing += OnClosing;
+        Loaded += (_, _) => ApplyInteractionState();
+    }
+
+    public void ApplyAppearance()
+    {
+        TextElement.SetForeground(_surface, new SolidColorBrush(ParseColor(Settings.TextColor, Color.FromRgb(35, 71, 139))));
+        var background = ParseColor(Settings.BackgroundColor, Colors.White);
+        background.A = (byte)Math.Round(255 * Math.Clamp(Settings.BackgroundOpacity, 0, 1));
+        _surface.Background = new SolidColorBrush(background);
+        Topmost = Settings.IsAlwaysOnTop;
+        ApplyInteractionState();
+    }
+
+    public void ApplyInteractionState() =>
+        WindowBehaviorService.SetClickThrough(this, Settings.IsLocked);
+
+    public void ClosePermanently()
+    {
+        _allowClose = true;
+        Close();
+    }
+
+    private void OnMouseLeftButtonDown(object sender, MouseButtonEventArgs e)
+    {
+        if (Settings.IsLocked || e.ChangedButton != MouseButton.Left || IsTextEditingTarget(e.OriginalSource as DependencyObject))
+            return;
+
+        try
+        {
+            DragMove();
+            CaptureGeometry();
+            Selected?.Invoke(this, EventArgs.Empty);
+        }
+        catch (InvalidOperationException)
+        {
+            // The button may have been released before Windows began the native drag loop.
+        }
+    }
+
+    private static bool IsTextEditingTarget(DependencyObject? element)
+    {
+        while (element is not null)
+        {
+            if (element is TextBoxBase) return true;
+            element = VisualTreeHelper.GetParent(element);
+        }
+        return false;
+    }
+
+    private void CaptureGeometry()
+    {
+        if (WindowState != WindowState.Normal) return;
+        Settings.Left = Left;
+        Settings.Top = Top;
+        Settings.Width = ActualWidth;
+        Settings.Height = ActualHeight;
+        GeometryChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void OnClosing(object? sender, CancelEventArgs e)
+    {
+        CaptureGeometry();
+        if (_allowClose) return;
+        e.Cancel = true;
+        Hide();
+    }
+
+    private static Color ParseColor(string value, Color fallback)
+    {
+        try { return (Color)ColorConverter.ConvertFromString(value); }
+        catch (FormatException) { return fallback; }
+        catch (NotSupportedException) { return fallback; }
+    }
+}

@@ -8,7 +8,7 @@ public partial class App : Application
 {
     private SingleInstanceService? _singleInstance;
     private TrayIconService? _tray;
-    private MainWindow? _window;
+    private WidgetWindowManager? _widgetWindows;
 
     protected override void OnStartup(StartupEventArgs e)
     {
@@ -21,27 +21,21 @@ public partial class App : Application
             return;
         }
 
-        _window = new MainWindow(new SettingsService());
-        MainWindow = _window;
+        _widgetWindows = new WidgetWindowManager(new SettingsService());
         _tray = new TrayIconService();
-        _tray.OpenRequested += (_, _) => ShowMainWindow();
-        _tray.ToggleLockRequested += (_, _) => _window.ToggleLock();
+        _tray.OpenRequested += (_, _) =>
+        {
+            _widgetWindows.ShowAll();
+            _widgetWindows.ShowSettings();
+        };
+        _tray.ToggleLockRequested += (_, _) => _widgetWindows.ToggleLock();
         _tray.ExitRequested += (_, _) => ExitApplication();
-        _window.Show();
-    }
-
-    private void ShowMainWindow()
-    {
-        if (_window is null) return;
-        _window.Show();
-        _window.WindowState = WindowState.Normal;
-        _window.Activate();
+        _widgetWindows.ShowAll();
     }
 
     private void ExitApplication()
     {
-        _window?.AllowClose();
-        _window?.Close();
+        _widgetWindows?.CloseAll();
         Shutdown();
     }
 
