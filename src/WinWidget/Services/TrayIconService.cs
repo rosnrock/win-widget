@@ -60,7 +60,7 @@ public sealed class TrayIconService : IDisposable
         var menu = CreatePopupMenu();
         try
         {
-            AppendMenu(menu, MfString, 1, "Настройки");
+            AppendMenu(menu, MfString, 1, "Управление виджетами");
             AppendMenu(menu, MfString, 2, "Закрепить / разблокировать");
             AppendMenu(menu, MfString, 3, "Выход");
             GetCursorPos(out var cursor);

@@ -16,6 +16,8 @@ public sealed class WidgetWindow : Window
     private bool _allowClose;
 
     public WidgetSettings Settings { get; }
+    public bool SnapToGrid { get; set; }
+    public double GridSize { get; set; } = 16;
     public event EventHandler? Selected;
     public event EventHandler? GeometryChanged;
 
@@ -74,6 +76,7 @@ public sealed class WidgetWindow : Window
         try
         {
             DragMove();
+            AlignToGrid();
             CaptureGeometry();
             Selected?.Invoke(this, EventArgs.Empty);
         }
@@ -81,6 +84,14 @@ public sealed class WidgetWindow : Window
         {
             // The button may have been released before Windows began the native drag loop.
         }
+    }
+
+    public void AlignToGrid(bool force = false)
+    {
+        if ((!SnapToGrid && !force) || !double.IsFinite(GridSize) || GridSize < 1) return;
+        Left = Math.Round(Left / GridSize) * GridSize;
+        Top = Math.Round(Top / GridSize) * GridSize;
+        CaptureGeometry();
     }
 
     private static bool IsTextEditingTarget(DependencyObject? element)

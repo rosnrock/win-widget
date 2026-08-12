@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Threading;
 using WinWidget.Models;
 using WinWidget.Views;
@@ -14,37 +15,100 @@ public sealed class WidgetWindowManager
     private readonly DispatcherTimer _saveTimer = new() { Interval = TimeSpan.FromMilliseconds(350) };
 
     public IReadOnlyList<WidgetWindow> Windows => _windows;
+    public IReadOnlyList<WidgetSettings> Widgets => _settings.Widgets;
+    public ApplicationSettings Settings => _settings;
+    public bool SnapToGrid
+    {
+        get => _settings.SnapToGrid;
+        set => SetGrid(value, _settings.GridSize);
+    }
+    public double GridSize
+    {
+        get => _settings.GridSize;
+        set => SetGrid(_settings.SnapToGrid, value);
+    }
     public WidgetWindow? SelectedWindow { get; private set; }
     public event Action<WidgetWindow>? WidgetSelected;
+    public event EventHandler? WidgetsChanged;
 
     public WidgetWindowManager(SettingsService settingsService)
     {
         _settingsService = settingsService;
         _settings = settingsService.Load();
-        _saveTimer.Tick += (_, _) =>
-        {
-            _saveTimer.Stop();
-            SaveNow();
-        };
+        _saveTimer.Tick += (_, _) => { _saveTimer.Stop(); SaveNow(); };
         _appearanceWindow.AppearanceChanged += (_, _) => Save();
         EnsureWidgetSettings();
-        AddWindow(WidgetKind.Clock, new ClockWidgetView());
-        AddWindow(WidgetKind.Calendar, new CalendarWidgetView());
+        foreach (var settings in _settings.Widgets.ToArray()) CreateWindow(settings);
+    }
 
-        var notesView = new NotesWidgetView();
-        var notesSettings = GetSettings(WidgetKind.Notes);
-        notesView.NoteText = notesSettings.Text;
-        notesView.NoteChanged += (_, _) =>
-        {
-            notesSettings.Text = notesView.NoteText;
-            ScheduleSave();
-        };
-        AddWindow(WidgetKind.Notes, notesView);
+    public WidgetSettings AddWidget(WidgetKind kind)
+    {
+        var count = _settings.Widgets.Count(widget => widget.Kind == kind) + 1;
+        var settings = CreateDefaultSettings(kind, count);
+        _settings.Widgets.Add(settings);
+        var window = CreateWindow(settings);
+        EnsureVisible(window);
+        window.Show();
+        SelectWindow(window, showAppearance: false);
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+        return settings;
+    }
+
+    public bool RemoveWidget(string id)
+    {
+        var window = FindWindow(id);
+        if (window is null) return false;
+        // Keep the application useful: deleting the last widget is allowed, but the
+        // control centre remains the way to add one again.
+        if (ReferenceEquals(SelectedWindow, window)) SelectedWindow = null;
+        _windows.Remove(window);
+        _settings.Widgets.Remove(window.Settings);
+        window.ClosePermanently();
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+        return true;
+    }
+
+    public bool RemoveWidget(WidgetSettings settings) => RemoveWidget(settings.Id);
+
+    public WidgetSettings? FindWidget(string id) => FindWindow(id)?.Settings;
+
+    public void SetVisibility(string id, bool isVisible)
+    {
+        var window = FindWindow(id);
+        if (window is null || window.Settings.IsVisible == isVisible) return;
+        window.Settings.IsVisible = isVisible;
+        if (isVisible) { EnsureVisible(window); window.Show(); }
+        else window.Hide();
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetVisibility(WidgetSettings settings, bool isVisible) => SetVisibility(settings.Id, isVisible);
+
+    public void FocusWidget(string id)
+    {
+        var window = FindWindow(id);
+        if (window is null) return;
+        if (!window.Settings.IsVisible) SetVisibility(id, true);
+        EnsureVisible(window);
+        window.Show();
+        window.Activate();
+        window.Topmost = true;
+        window.Topmost = window.Settings.IsAlwaysOnTop;
+        SelectWindow(window, showAppearance: false);
+    }
+
+    public void SelectWidget(string id)
+    {
+        var window = FindWindow(id);
+        if (window is not null) SelectWindow(window, showAppearance: false);
     }
 
     public void ShowAll()
     {
-        foreach (var window in _windows)
+        foreach (var window in _windows.Where(window => window.Settings.IsVisible))
         {
             EnsureVisible(window);
             window.Show();
@@ -53,25 +117,50 @@ public sealed class WidgetWindowManager
 
     public void ShowSettings()
     {
-        var target = SelectedWindow ?? _windows.FirstOrDefault();
+        var target = SelectedWindow ?? _windows.FirstOrDefault(window => window.Settings.IsVisible);
         if (target is not null) _appearanceWindow.ShowFor(target);
     }
 
     public void ToggleLock()
     {
         var lockWidgets = !_settings.Widgets.All(widget => widget.IsLocked);
-        foreach (var window in _windows)
-        {
-            window.Settings.IsLocked = lockWidgets;
-            window.ApplyInteractionState();
-        }
+        foreach (var window in _windows) { window.Settings.IsLocked = lockWidgets; window.ApplyInteractionState(); }
         SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void UpdateAppearance(string id)
+    {
+        FindWindow(id)?.ApplyAppearance();
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void UpdateAppearance(WidgetKind kind)
     {
-        _windows.FirstOrDefault(window => window.Settings.Kind == kind)?.ApplyAppearance();
+        foreach (var window in _windows.Where(window => window.Settings.Kind == kind)) window.ApplyAppearance();
         SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void SetGrid(bool enabled, double gridSize)
+    {
+        _settings.SnapToGrid = enabled;
+        _settings.GridSize = double.IsFinite(gridSize) && gridSize >= 4 ? gridSize : 16;
+        foreach (var window in _windows)
+        {
+            window.SnapToGrid = _settings.SnapToGrid;
+            window.GridSize = _settings.GridSize;
+        }
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    public void AlignAllToGrid()
+    {
+        foreach (var window in _windows) window.AlignToGrid(force: true);
+        SaveNow();
+        WidgetsChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public void CloseAll()
@@ -79,44 +168,77 @@ public sealed class WidgetWindowManager
         _saveTimer.Stop();
         SaveNow();
         _appearanceWindow.ClosePermanently();
-        foreach (var window in _windows) window.ClosePermanently();
+        foreach (var window in _windows.ToArray()) window.ClosePermanently();
     }
 
-    private void AddWindow(WidgetKind kind, System.Windows.Controls.UserControl content)
+    private WidgetWindow CreateWindow(WidgetSettings settings)
     {
-        var window = new WidgetWindow(GetSettings(kind), content);
-        window.Selected += (_, _) =>
+        UserControl content = settings.Kind switch
         {
-            SelectedWindow = window;
-            WidgetSelected?.Invoke(window);
-            _appearanceWindow.ShowFor(window);
+            WidgetKind.Clock => new ClockWidgetView(),
+            WidgetKind.Calendar => new CalendarWidgetView(),
+            WidgetKind.Notes => CreateNotesView(settings),
+            _ => throw new ArgumentOutOfRangeException(nameof(settings.Kind))
         };
+        var window = new WidgetWindow(settings, content);
+        window.SnapToGrid = _settings.SnapToGrid;
+        window.GridSize = _settings.GridSize;
+        window.Selected += (_, _) => SelectWindow(window, showAppearance: true);
         window.GeometryChanged += (_, _) => ScheduleSave();
         _windows.Add(window);
+        return window;
     }
+
+    private NotesWidgetView CreateNotesView(WidgetSettings settings)
+    {
+        var view = new NotesWidgetView { NoteText = settings.Text };
+        view.NoteChanged += (_, _) => { settings.Text = view.NoteText; ScheduleSave(); };
+        return view;
+    }
+
+    private void SelectWindow(WidgetWindow window, bool showAppearance)
+    {
+        SelectedWindow = window;
+        WidgetSelected?.Invoke(window);
+        if (showAppearance) _appearanceWindow.ShowFor(window);
+    }
+
+    private WidgetWindow? FindWindow(string id) =>
+        _windows.FirstOrDefault(window => string.Equals(window.Settings.Id, id, StringComparison.OrdinalIgnoreCase));
 
     private void EnsureWidgetSettings()
     {
-        foreach (var kind in Enum.GetValues<WidgetKind>()) GetSettings(kind);
+        if (_settings.Widgets.Count > 0) return;
+        foreach (var kind in Enum.GetValues<WidgetKind>()) _settings.Widgets.Add(CreateDefaultSettings(kind, 1));
     }
 
-    private WidgetSettings GetSettings(WidgetKind kind)
+    private WidgetSettings CreateDefaultSettings(WidgetKind kind, int number)
     {
-        var result = _settings.Widgets.FirstOrDefault(widget => widget.Kind == kind);
-        if (result is not null) return result;
-        result = new WidgetSettings { Kind = kind };
-        _settings.Widgets.Add(result);
-        return result;
+        var settings = new WidgetSettings
+        {
+            Kind = kind,
+            DisplayName = DefaultDisplayName(kind, number),
+            Left = 70 + ((_settings.Widgets.Count * 36) % 360),
+            Top = 80 + ((_settings.Widgets.Count * 36) % 240)
+        };
+        (settings.Width, settings.Height) = kind switch
+        {
+            WidgetKind.Clock => (440, 210),
+            WidgetKind.Calendar => (230, 220),
+            WidgetKind.Notes => (300, 170),
+            _ => (320, 180)
+        };
+        return settings;
+    }
+
+    private static string DefaultDisplayName(WidgetKind kind, int number)
+    {
+        var name = kind switch { WidgetKind.Clock => "Часы", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Заметка", _ => "Виджет" };
+        return number == 1 ? name : $"{name} {number}";
     }
 
     private void Save() => ScheduleSave();
-
-    private void ScheduleSave()
-    {
-        _saveTimer.Stop();
-        _saveTimer.Start();
-    }
-
+    private void ScheduleSave() { _saveTimer.Stop(); _saveTimer.Start(); }
     private void SaveNow() => _settingsService.Save(_settings);
 
     private static void EnsureVisible(Window window)

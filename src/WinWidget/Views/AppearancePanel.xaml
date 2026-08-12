@@ -1,8 +1,19 @@
 <UserControl x:Class="WinWidget.Views.AppearancePanel"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             MinWidth="260" MaxWidth="300"
+             MinWidth="300" MaxWidth="340"
              FontFamily="{StaticResource WidgetTextFont}">
+    <UserControl.Resources>
+        <Style x:Key="ColorValueBox" TargetType="TextBox">
+            <Setter Property="Height" Value="28" />
+            <Setter Property="Padding" Value="6,3" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
+            <Setter Property="BorderBrush" Value="#28000000" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="Background" Value="#FFFFFFFF" />
+            <Setter Property="FontSize" Value="12" />
+        </Style>
+    </UserControl.Resources>
     <Border Padding="18" CornerRadius="18"
             Background="#FAFFFFFF"
             BorderBrush="#16000000" BorderThickness="1">
@@ -15,62 +26,96 @@
 
             <TextBlock Margin="0,17,0,8" Text="Text color"
                        Style="{StaticResource AppearanceLabel}" />
-            <ItemsControl x:Name="TextPalette">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF23478B" Tag="#23478B"
-                        ToolTip="Ocean blue" Click="OnTextColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF202124" Tag="#202124"
-                        ToolTip="Charcoal" Click="OnTextColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFFFFFFF" Tag="#FFFFFF"
-                        ToolTip="White" Click="OnTextColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFC74645" Tag="#C74645"
-                        ToolTip="Coral" Click="OnTextColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF3B705F" Tag="#3B705F"
-                        ToolTip="Forest" Click="OnTextColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF75558C" Tag="#75558C"
-                        ToolTip="Plum" Click="OnTextColorClick" />
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="36" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Border x:Name="TextPreview" Width="28" Height="28" CornerRadius="14"
+                        BorderBrush="#28000000" BorderThickness="1" />
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="1.45*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="TextR" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}"
+                             ToolTip="Red, 0–255" TextChanged="OnTextEditorChanged" />
+                    <TextBox x:Name="TextG" Grid.Column="1" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}"
+                             ToolTip="Green, 0–255" TextChanged="OnTextEditorChanged" />
+                    <TextBox x:Name="TextB" Grid.Column="2" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}"
+                             ToolTip="Blue, 0–255" TextChanged="OnTextEditorChanged" />
+                    <TextBox x:Name="TextHex" Grid.Column="3" Style="{StaticResource ColorValueBox}"
+                             ToolTip="HEX color, #RRGGBB" TextChanged="OnTextEditorChanged" />
+                </Grid>
+            </Grid>
+            <Grid Margin="36,3,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="1.45*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="R" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="1" Text="G" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="2" Text="B" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="3" Text="HEX" Style="{StaticResource AppearanceLabel}" />
+            </Grid>
+            <TextBlock x:Name="TextError" Margin="36,3,0,0" Foreground="#FFC62828"
+                       FontSize="11" Visibility="Collapsed" />
+            <ItemsControl x:Name="TextPalette" Margin="0,8,0,0">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF23478B" Tag="#23478B" Click="OnTextColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF202124" Tag="#202124" Click="OnTextColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFFFFFFF" Tag="#FFFFFF" Click="OnTextColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFC74645" Tag="#C74645" Click="OnTextColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF3B705F" Tag="#3B705F" Click="OnTextColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF75558C" Tag="#75558C" Click="OnTextColorClick" />
             </ItemsControl>
 
-            <TextBlock Margin="0,14,0,8" Text="Background"
+            <TextBlock Margin="0,15,0,8" Text="Background color"
                        Style="{StaticResource AppearanceLabel}" />
-            <ItemsControl x:Name="BackgroundPalette">
-                <ItemsControl.ItemsPanel>
-                    <ItemsPanelTemplate>
-                        <WrapPanel />
-                    </ItemsPanelTemplate>
-                </ItemsControl.ItemsPanel>
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFFFFFFF" Tag="#FFFFFF"
-                        ToolTip="White" Click="OnBackgroundColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFE7E4DE" Tag="#E7E4DE"
-                        ToolTip="Warm gray" Click="OnBackgroundColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFDCE8F5" Tag="#DCE8F5"
-                        ToolTip="Mist blue" Click="OnBackgroundColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FFF2DFD8" Tag="#F2DFD8"
-                        ToolTip="Shell" Click="OnBackgroundColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF17345F" Tag="#17345F"
-                        ToolTip="Navy" Click="OnBackgroundColorClick" />
-                <Button Style="{StaticResource ColorSwatch}" Background="#FF000000" Tag="#000000"
-                        ToolTip="Black" Click="OnBackgroundColorClick" />
+            <Grid>
+                <Grid.ColumnDefinitions><ColumnDefinition Width="36" /><ColumnDefinition Width="*" /></Grid.ColumnDefinitions>
+                <Border x:Name="BackgroundPreview" Width="28" Height="28" CornerRadius="14"
+                        BorderBrush="#28000000" BorderThickness="1" />
+                <Grid Grid.Column="1">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="*" /><ColumnDefinition Width="1.45*" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="BackgroundR" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}" ToolTip="Red, 0–255" TextChanged="OnBackgroundEditorChanged" />
+                    <TextBox x:Name="BackgroundG" Grid.Column="1" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}" ToolTip="Green, 0–255" TextChanged="OnBackgroundEditorChanged" />
+                    <TextBox x:Name="BackgroundB" Grid.Column="2" Margin="0,0,5,0" Style="{StaticResource ColorValueBox}" ToolTip="Blue, 0–255" TextChanged="OnBackgroundEditorChanged" />
+                    <TextBox x:Name="BackgroundHex" Grid.Column="3" Style="{StaticResource ColorValueBox}" ToolTip="HEX color, #RRGGBB" TextChanged="OnBackgroundEditorChanged" />
+                </Grid>
+            </Grid>
+            <Grid Margin="36,3,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="*" /><ColumnDefinition Width="1.45*" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Text="R" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="1" Text="G" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="2" Text="B" Style="{StaticResource AppearanceLabel}" />
+                <TextBlock Grid.Column="3" Text="HEX" Style="{StaticResource AppearanceLabel}" />
+            </Grid>
+            <TextBlock x:Name="BackgroundError" Margin="36,3,0,0" Foreground="#FFC62828"
+                       FontSize="11" Visibility="Collapsed" />
+            <ItemsControl x:Name="BackgroundPalette" Margin="0,8,0,0">
+                <ItemsControl.ItemsPanel><ItemsPanelTemplate><WrapPanel /></ItemsPanelTemplate></ItemsControl.ItemsPanel>
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFFFFFFF" Tag="#FFFFFF" Click="OnBackgroundColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFE7E4DE" Tag="#E7E4DE" Click="OnBackgroundColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFDCE8F5" Tag="#DCE8F5" Click="OnBackgroundColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FFF2DFD8" Tag="#F2DFD8" Click="OnBackgroundColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF17345F" Tag="#17345F" Click="OnBackgroundColorClick" />
+                <Button Style="{StaticResource ColorSwatch}" Background="#FF000000" Tag="#000000" Click="OnBackgroundColorClick" />
             </ItemsControl>
 
             <Grid Margin="0,16,0,0">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="40" />
-                </Grid.ColumnDefinitions>
-                <TextBlock Text="Opacity" VerticalAlignment="Center"
-                           Style="{StaticResource AppearanceLabel}" />
-                <Slider x:Name="OpacitySlider" Grid.Column="1" Margin="13,0,9,0"
-                        Minimum="0" Maximum="100" Value="0" TickFrequency="5"
-                        VerticalAlignment="Center" ValueChanged="OnOpacityChanged" />
-                <TextBlock x:Name="OpacityLabel" Grid.Column="2" Text="0%"
-                           VerticalAlignment="Center" TextAlignment="Right"
-                           Foreground="#A6202124" FontSize="12" />
+                <Grid.ColumnDefinitions><ColumnDefinition Width="Auto" /><ColumnDefinition Width="*" /><ColumnDefinition Width="40" /></Grid.ColumnDefinitions>
+                <TextBlock Text="Background opacity" VerticalAlignment="Center" Style="{StaticResource AppearanceLabel}" />
+                <Slider x:Name="OpacitySlider" Grid.Column="1" Margin="13,0,9,0" Minimum="0" Maximum="100" Value="0"
+                        TickFrequency="5" VerticalAlignment="Center" ValueChanged="OnOpacityChanged" />
+                <TextBlock x:Name="OpacityLabel" Grid.Column="2" Text="0%" VerticalAlignment="Center"
+                           TextAlignment="Right" Foreground="#A6202124" FontSize="12" />
             </Grid>
         </StackPanel>
     </Border>

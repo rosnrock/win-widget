@@ -2,7 +2,10 @@ namespace WinWidget.Models;
 
 public sealed class WidgetSettings
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString("N");
     public WidgetKind Kind { get; set; }
+    public string DisplayName { get; set; } = string.Empty;
+    public bool IsVisible { get; set; } = true;
     public double Left { get; set; } = 80;
     public double Top { get; set; } = 80;
     public double Width { get; set; } = 320;
