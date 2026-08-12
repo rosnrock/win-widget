@@ -80,7 +80,16 @@ public sealed class SettingsService
             widget.TextColor = NormalizeColor(widget.TextColor, "#23478B");
             widget.BackgroundColor = NormalizeColor(widget.BackgroundColor, "#FFFFFF");
             widget.Text ??= string.Empty;
-            widget.Location = string.IsNullOrWhiteSpace(widget.Location) ? "Москва" : widget.Location.Trim();
+            widget.ImagePath ??= string.Empty;
+            widget.Location = string.IsNullOrWhiteSpace(widget.Location) ? "Moscow" : widget.Location.Trim();
+            if (string.Equals(widget.Location, "Москва", StringComparison.OrdinalIgnoreCase))
+            {
+                widget.Location = "Moscow";
+                // The cached place name remains visible while offline. Discard
+                // the legacy Russian cache so the next refresh resolves it in
+                // English together with the migrated configured location.
+                widget.WeatherCache = null;
+            }
             widget.BackgroundOpacity = double.IsFinite(widget.BackgroundOpacity)
                 ? Math.Clamp(widget.BackgroundOpacity, 0, 1)
                 : 0;
@@ -90,6 +99,19 @@ public sealed class SettingsService
                 // 320 x 240 weather geometry once while keeping its screen position.
                 widget.Width = 440;
                 widget.Height = 210;
+            }
+            if (sourceSchemaVersion < 5 && widget.Kind == WidgetKind.Weather)
+            {
+                // Keep the established card width, but make weather exactly two
+                // thirds of the 220 px calendar height.
+                widget.Width = 440;
+                widget.Height = 220d * 2d / 3d;
+            }
+            if (sourceSchemaVersion < 6 && widget.Kind == WidgetKind.Image)
+            {
+                // Image widgets use the same footprint as calendar cards.
+                widget.Width = 230;
+                widget.Height = 220;
             }
             NormalizeGeometry(widget);
             migratedWidgets.Add(widget);
@@ -106,7 +128,8 @@ public sealed class SettingsService
             WidgetKind.Clock => (440d, 80d, 440d, 210d, 240d, 120d),
             WidgetKind.Calendar => (70d, 170d, 230d, 220d, 180d, 160d),
             WidgetKind.Notes => (70d, 420d, 300d, 170d, 220d, 92d),
-            WidgetKind.Weather => (340d, 320d, 440d, 210d, 440d, 210d),
+            WidgetKind.Weather => (340d, 320d, 440d, 220d * 2d / 3d, 440d, 220d * 2d / 3d),
+            WidgetKind.Image => (340d, 320d, 230d, 220d, 180d, 160d),
             _ => (80d, 80d, 320d, 180d, 120d, 80d)
         };
 
@@ -133,6 +156,7 @@ public sealed class SettingsService
             WidgetKind.Calendar => "Календарь",
             WidgetKind.Notes => "Заметка",
             WidgetKind.Weather => "Погода",
+            WidgetKind.Image => "Image",
             _ => "Виджет"
         };
         return number == 1 ? baseName : $"{baseName} {number}";

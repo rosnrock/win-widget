@@ -30,7 +30,7 @@ public partial class CalendarWidgetView : UserControl
     {
         var today = DateTime.Today;
         _renderedDate = today;
-        var culture = CultureInfo.CurrentUICulture;
+        var culture = CultureInfo.GetCultureInfo("en-US");
         MonthLabel.Text = today.ToString("MMMM", culture).ToUpper(culture);
         WeekdayGrid.Children.Clear();
         DaysGrid.Children.Clear();
@@ -48,7 +48,10 @@ public partial class CalendarWidgetView : UserControl
         {
             var date = first.AddDays(cell - offset);
             var label = CreateText(date.Day.ToString(culture), 13, date.Month == today.Month ? 0.94 : 0.25);
-            var host = new Border { Width = 27, Height = 27, CornerRadius = new CornerRadius(14), Child = label };
+            // At the default 220 px card height, each of the six calendar rows
+            // is about 22 px tall after padding and headers. Match that row so
+            // the circular today marker is never clipped by UniformGrid.
+            var host = new Border { Width = 22, Height = 22, CornerRadius = new CornerRadius(11), Child = label };
             if (date == today)
             {
                 host.Background = new SolidColorBrush(Color.FromArgb(58, 255, 255, 255));

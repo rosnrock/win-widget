@@ -9,7 +9,7 @@
             <TextBlock x:Name="TimeLabel" Margin="0,-10,0,-7"
                        HorizontalAlignment="Center" TextAlignment="Center"
                        FontFamily="{StaticResource WidgetFont}"
-                       FontSize="104" FontWeight="SemiBold"
+                       FontSize="108" FontWeight="ExtraBold"
                        TextOptions.TextFormattingMode="Display" />
             <TextBlock x:Name="DayHintLabel" HorizontalAlignment="Center" TextAlignment="Center"
                        Style="{StaticResource WidgetLabel}" FontSize="14" Opacity="0.58" />

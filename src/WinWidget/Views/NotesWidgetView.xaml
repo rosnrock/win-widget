@@ -2,7 +2,7 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
     <Grid MinWidth="220" MinHeight="92">
-        <TextBlock x:Name="Placeholder" Margin="3,34,3,2" Text="Напишите что-нибудь…"
+        <TextBlock x:Name="Placeholder" Margin="3,34,3,2" Text="Write something…"
                    FontFamily="{StaticResource WidgetTextFont}" FontSize="18"
                    FontWeight="SemiBold" Opacity="0.38"
                    Foreground="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource AncestorType=Border}}"
@@ -16,7 +16,7 @@
                  TextBlock.LineHeight="25"
                  TextChanged="OnTextChanged" />
         <Border x:Name="DragHandle" Width="48" Height="26" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeAll"
-                Background="Transparent" ToolTip="Перетащить заметку"
+                Background="Transparent" ToolTip="Drag note"
                 MouseLeftButtonDown="OnDragHandleMouseDown">
             <TextBlock Text="•••" HorizontalAlignment="Center" VerticalAlignment="Center"
                        FontSize="16" FontWeight="Bold" Opacity="0.28"

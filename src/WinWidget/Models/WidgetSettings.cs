@@ -16,7 +16,8 @@ public sealed class WidgetSettings
     public bool IsLocked { get; set; }
     public bool IsAlwaysOnTop { get; set; }
     public string Text { get; set; } = string.Empty;
-    public string Location { get; set; } = "Москва";
+    public string ImagePath { get; set; } = string.Empty;
+    public string Location { get; set; } = "Moscow";
     public WeatherCache? WeatherCache { get; set; }
 }
 

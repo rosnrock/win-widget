@@ -2,7 +2,7 @@ namespace WinWidget.Models;
 
 public sealed class ApplicationSettings
 {
-    public const int CurrentSchemaVersion = 4;
+    public const int CurrentSchemaVersion = 6;
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public bool SnapToGrid { get; set; }

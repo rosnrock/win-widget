@@ -189,6 +189,7 @@ public sealed class WidgetWindowManager
             WidgetKind.Calendar => new CalendarWidgetView(),
             WidgetKind.Notes => CreateNotesView(settings),
             WidgetKind.Weather => new WeatherWidgetView(settings, _weatherService, ScheduleSave),
+            WidgetKind.Image => new ImageWidgetView(settings),
             _ => throw new ArgumentOutOfRangeException(nameof(settings.Kind))
         };
         var window = new WidgetWindow(settings, content);
@@ -242,7 +243,8 @@ public sealed class WidgetWindowManager
             WidgetKind.Clock => (440, 210),
             WidgetKind.Calendar => (230, 220),
             WidgetKind.Notes => (300, 170),
-            WidgetKind.Weather => (440, 210),
+            WidgetKind.Weather => (440, 220d * 2d / 3d),
+            WidgetKind.Image => (230, 220),
             _ => (320, 180)
         };
         return settings;
@@ -250,7 +252,7 @@ public sealed class WidgetWindowManager
 
     private static string DefaultDisplayName(WidgetKind kind, int number)
     {
-        var name = kind switch { WidgetKind.Clock => "Часы", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Заметка", WidgetKind.Weather => "Погода", _ => "Виджет" };
+        var name = kind switch { WidgetKind.Clock => "Часы", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Заметка", WidgetKind.Weather => "Погода", WidgetKind.Image => "Image", _ => "Виджет" };
         return number == 1 ? name : $"{name} {number}";
     }
 

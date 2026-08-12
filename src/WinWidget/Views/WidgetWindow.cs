@@ -35,8 +35,17 @@ public sealed class WidgetWindow : Window
         WindowBehaviorService.ConfigureWidgetWindow(this);
         _surface = new Border
         {
-            Padding = new Thickness(22),
+            // The weather card is intentionally only two thirds as tall as the
+            // calendar, so retain the shared horizontal inset while giving its
+            // compact three-row layout enough vertical room.
+            Padding = settings.Kind switch
+            {
+                WidgetKind.Weather => new Thickness(22, 12, 22, 12),
+                WidgetKind.Image => new Thickness(0),
+                _ => new Thickness(22)
+            },
             CornerRadius = new CornerRadius(32),
+            ClipToBounds = true,
             BorderBrush = new SolidColorBrush(Color.FromArgb(82, 169, 196, 245)),
             BorderThickness = new Thickness(1),
             Child = content
@@ -52,13 +61,18 @@ public sealed class WidgetWindow : Window
         PreviewMouseLeftButtonDown += OnMouseLeftButtonDown;
         MouseRightButtonUp += (_, _) => Selected?.Invoke(this, EventArgs.Empty);
         LocationChanged += (_, _) => CaptureGeometry();
-        SizeChanged += (_, _) => CaptureGeometry();
+        SizeChanged += (_, _) =>
+        {
+            UpdateSurfaceClip();
+            CaptureGeometry();
+        };
         Closing += OnClosing;
         Loaded += (_, _) => ApplyInteractionState();
     }
 
     public void ApplyAppearance()
     {
+        if (_surface.Child is ImageWidgetView imageView) imageView.RefreshImage();
         TextElement.SetForeground(_surface, new SolidColorBrush(ParseColor(Settings.TextColor, Color.FromRgb(35, 71, 139))));
         var background = ParseColor(Settings.BackgroundColor, Colors.White);
         var backgroundOpacity = Math.Clamp(Settings.BackgroundOpacity, 0, 1);
@@ -134,6 +148,12 @@ public sealed class WidgetWindow : Window
         Settings.Width = ActualWidth;
         Settings.Height = ActualHeight;
         GeometryChanged?.Invoke(this, EventArgs.Empty);
+    }
+
+    private void UpdateSurfaceClip()
+    {
+        if (Settings.Kind != WidgetKind.Image || ActualWidth <= 0 || ActualHeight <= 0) return;
+        _surface.Clip = new RectangleGeometry(new Rect(0, 0, ActualWidth, ActualHeight), 32, 32);
     }
 
     private void OnClosing(object? sender, CancelEventArgs e)

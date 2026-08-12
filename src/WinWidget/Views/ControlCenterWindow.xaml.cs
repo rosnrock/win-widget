@@ -5,6 +5,7 @@ using System.Windows.Media;
 using System.Windows.Input;
 using WinWidget.Models;
 using WinWidget.Services;
+using Microsoft.Win32;
 
 namespace WinWidget.Views;
 
@@ -72,6 +73,7 @@ public partial class ControlCenterWindow : Window
         if (selected is null)
         {
             WeatherSettingsPanel.Visibility = Visibility.Collapsed;
+            ImageSettingsPanel.Visibility = Visibility.Collapsed;
             return;
         }
 
@@ -80,6 +82,9 @@ public partial class ControlCenterWindow : Window
         AppearancePanel.SetAppearance(ParseColor(selected.Settings.TextColor, Color.FromRgb(35, 71, 139)),
             ParseColor(selected.Settings.BackgroundColor, Colors.White), selected.Settings.BackgroundOpacity);
         WeatherSettingsPanel.Visibility = selected.Settings.Kind == WidgetKind.Weather ? Visibility.Visible : Visibility.Collapsed;
+        ImageSettingsPanel.Visibility = selected.Settings.Kind == WidgetKind.Image ? Visibility.Visible : Visibility.Collapsed;
+        ImagePathTextBlock.Text = string.IsNullOrWhiteSpace(selected.Settings.ImagePath)
+            ? "No image selected" : selected.Settings.ImagePath;
         WeatherLocationTextBox.Text = selected.Settings.Location;
     }
 
@@ -151,6 +156,30 @@ public partial class ControlCenterWindow : Window
 
     private void OnAlignAllClick(object sender, RoutedEventArgs e) => _manager.AlignAllToGrid();
 
+    private void OnChooseImageClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedItem is not { Settings.Kind: WidgetKind.Image } item) return;
+        var dialog = new OpenFileDialog
+        {
+            Title = "Choose an image",
+            Filter = "Image files|*.png;*.jpg;*.jpeg;*.bmp;*.gif;*.tif;*.tiff;*.webp|All files|*.*",
+            CheckFileExists = true,
+            Multiselect = false
+        };
+        if (dialog.ShowDialog(this) != true) return;
+        item.Settings.ImagePath = dialog.FileName;
+        _manager.UpdateAppearance(item.Id);
+        RefreshList(item.Id);
+    }
+
+    private void OnClearImageClick(object sender, RoutedEventArgs e)
+    {
+        if (SelectedItem is not { Settings.Kind: WidgetKind.Image } item) return;
+        item.Settings.ImagePath = string.Empty;
+        _manager.UpdateAppearance(item.Id);
+        RefreshList(item.Id);
+    }
+
     private void OnWeatherLocationChanged(object sender, RoutedEventArgs e) => ApplyWeatherLocation();
     private void OnWeatherLocationKeyDown(object sender, KeyEventArgs e)
     {
@@ -201,7 +230,7 @@ public partial class ControlCenterWindow : Window
         string Status, Brush StatusBackground, Brush StatusForeground, WidgetSettings Settings)
     {
         public static WidgetListItem From(WidgetSettings settings) => new(settings.Id, settings.DisplayName,
-            settings.Kind switch { WidgetKind.Clock => "Дата и время", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Текстовая заметка", WidgetKind.Weather => "Погода", _ => "Виджет" },
+            settings.Kind switch { WidgetKind.Clock => "Дата и время", WidgetKind.Calendar => "Календарь", WidgetKind.Notes => "Текстовая заметка", WidgetKind.Weather => "Погода", WidgetKind.Image => "Image", _ => "Виджет" },
             settings.IsVisible, settings.IsVisible ? "На экране" : "Скрыт",
             new SolidColorBrush(settings.IsVisible ? Color.FromRgb(231, 244, 236) : Color.FromRgb(240, 241, 243)),
             new SolidColorBrush(settings.IsVisible ? Color.FromRgb(45, 109, 70) : Color.FromRgb(99, 103, 110)), settings);

@@ -30,7 +30,7 @@ public partial class WeatherWidgetView : UserControl
         CancelRefresh();
         var request = new CancellationTokenSource();
         _refreshCancellation = request;
-        StatusLabel.Text = "Обновление…";
+        StatusLabel.Text = "Updating…";
         try
         {
             var snapshot = await _service.GetWeatherAsync(_settings.Location, request.Token);
@@ -70,7 +70,7 @@ public partial class WeatherWidgetView : UserControl
         if (cache is null)
         {
             TemperatureLabel.Text = "—°";
-            ConditionLabel.Text = offline ? "Нет подключения" : "Загрузка погоды";
+            ConditionLabel.Text = offline ? "No connection" : "Loading weather";
             RangeLabel.Text = string.Empty;
             WeatherIcon.Text = "☁";
             StatusLabel.Text = offline ? ShortError(error) : string.Empty;
@@ -81,8 +81,8 @@ public partial class WeatherWidgetView : UserControl
         RangeLabel.Text = $"↓ {Math.Round(cache.MinimumTemperature):0}°  ↑ {Math.Round(cache.MaximumTemperature):0}°";
         WeatherIcon.Text = Icon(cache.WeatherCode);
         StatusLabel.Text = offline
-            ? $"Офлайн · данные {cache.UpdatedAt.LocalDateTime:g}"
-            : $"Обновлено {cache.UpdatedAt.LocalDateTime:t}";
+            ? $"Offline · data from {cache.UpdatedAt.LocalDateTime:g}"
+            : $"Updated {cache.UpdatedAt.LocalDateTime:t}";
     }
 
     private void CancelRefresh()
@@ -93,7 +93,7 @@ public partial class WeatherWidgetView : UserControl
     }
     private static bool IsFatal(Exception exception) =>
         exception is OutOfMemoryException or StackOverflowException or AccessViolationException;
-    private static string ShortError(string? value) => string.IsNullOrWhiteSpace(value) ? "Не удалось загрузить погоду" : value.Length <= 50 ? value : value[..50] + "…";
+    private static string ShortError(string? value) => string.IsNullOrWhiteSpace(value) ? "Unable to load weather" : value.Length <= 50 ? value : value[..50] + "…";
     private static string Icon(int code) => code switch { 0 => "☀", 1 or 2 => "🌤", 3 => "☁", 45 or 48 => "≋", >= 51 and <= 67 => "☂", >= 71 and <= 77 => "❄", >= 80 and <= 82 => "☂", >= 95 => "⚡", _ => "☁" };
-    private static string Describe(int code) => code switch { 0 => "Ясно", 1 => "В основном ясно", 2 => "Переменная облачность", 3 => "Пасмурно", 45 or 48 => "Туман", >= 51 and <= 57 => "Морось", >= 61 and <= 67 => "Дождь", >= 71 and <= 77 => "Снег", >= 80 and <= 82 => "Ливень", >= 85 and <= 86 => "Снегопад", >= 95 => "Гроза", _ => "Погода" };
+    private static string Describe(int code) => code switch { 0 => "Clear", 1 => "Mostly clear", 2 => "Partly cloudy", 3 => "Overcast", 45 or 48 => "Fog", >= 51 and <= 57 => "Drizzle", >= 61 and <= 67 => "Rain", >= 71 and <= 77 => "Snow", >= 80 and <= 82 => "Rain showers", >= 85 and <= 86 => "Snow showers", >= 95 => "Thunderstorm", _ => "Weather" };
 }

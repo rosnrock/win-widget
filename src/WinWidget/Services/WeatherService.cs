@@ -13,11 +13,11 @@ public sealed class WeatherService
 
     public async Task<WeatherSnapshot> GetWeatherAsync(string location, CancellationToken cancellationToken)
     {
-        location = string.IsNullOrWhiteSpace(location) ? "Москва" : location.Trim();
+        location = string.IsNullOrWhiteSpace(location) ? "Moscow" : location.Trim();
         using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeout.CancelAfter(TimeSpan.FromSeconds(12));
 
-        var geocodeUrl = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=ru&format=json&name=" +
+        var geocodeUrl = "https://geocoding-api.open-meteo.com/v1/search?count=1&language=en&format=json&name=" +
                          Uri.EscapeDataString(location);
         using var geocodeResponse = await Client.GetAsync(geocodeUrl, timeout.Token).ConfigureAwait(false);
         geocodeResponse.EnsureSuccessStatusCode();
@@ -25,7 +25,7 @@ public sealed class WeatherService
         using var geocode = await JsonDocument.ParseAsync(geocodeStream, cancellationToken: timeout.Token).ConfigureAwait(false);
         var results = geocode.RootElement.TryGetProperty("results", out var resultArray) ? resultArray : default;
         if (results.ValueKind != JsonValueKind.Array || results.GetArrayLength() == 0)
-            throw new InvalidOperationException("Город не найден");
+            throw new InvalidOperationException("City not found");
 
         var place = results[0];
         var latitude = place.GetProperty("latitude").GetDouble().ToString(CultureInfo.InvariantCulture);
