@@ -1,0 +1,74 @@
+<Window x:Class="WinWidget.Views.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:WinWidget.Views"
+        Title="Win Widget — Design preview" Width="1180" Height="760"
+        MinWidth="940" MinHeight="620" WindowStartupLocation="CenterScreen"
+        Background="#FFE9E9E5" FontFamily="{StaticResource WidgetFont}">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="76" />
+        </Grid.RowDefinitions>
+
+        <Canvas x:Name="Desktop" Margin="28">
+            <Border x:Name="ClockSurface" Canvas.Left="350" Canvas.Top="30"
+                    Width="580" Height="210" Style="{StaticResource WidgetSurface}"
+                    MouseLeftButtonDown="OnWidgetMouseDown">
+                <local:ClockWidgetView />
+            </Border>
+
+            <Border x:Name="CalendarSurface" Canvas.Left="36" Canvas.Top="66"
+                    Width="260" Height="254" Style="{StaticResource WidgetSurface}"
+                    MouseLeftButtonDown="OnWidgetMouseDown">
+                <local:CalendarWidgetView />
+            </Border>
+
+            <Border x:Name="NotesSurface" Canvas.Left="36" Canvas.Top="350"
+                    Width="300" Height="128" Style="{StaticResource WidgetSurface}"
+                    MouseLeftButtonDown="OnWidgetMouseDown">
+                <local:NotesWidgetView />
+            </Border>
+
+            <TextBlock Canvas.Left="52" Canvas.Top="516" Text="Small steps every day"
+                       Foreground="#FF23478B" FontFamily="{StaticResource WidgetTextFont}"
+                       FontSize="13" FontWeight="SemiBold" Opacity="0.6" />
+        </Canvas>
+
+        <Border Grid.Row="1" Margin="20,0,20,16" Padding="16,10" CornerRadius="16"
+                Background="#F7FFFFFF" BorderBrush="#14000000" BorderThickness="1">
+            <DockPanel LastChildFill="False">
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal" VerticalAlignment="Center">
+                    <Button x:Name="ClockButton" Style="{StaticResource SettingsButton}" Content="Date &amp; time"
+                            Click="OnSelectWidget" Tag="ClockSurface" />
+                    <Button Style="{StaticResource SettingsButton}" Content="Calendar"
+                            Click="OnSelectWidget" Tag="CalendarSurface" />
+                    <Button Style="{StaticResource SettingsButton}" Content="Notes"
+                            Click="OnSelectWidget" Tag="NotesSurface" />
+                </StackPanel>
+
+                <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Margin="12,0,7,0" VerticalAlignment="Center" Text="Text" />
+                    <ComboBox x:Name="TextColor" Width="112" SelectionChanged="OnAppearanceChanged">
+                        <ComboBoxItem Content="Ocean blue" Tag="#23478B" IsSelected="True" />
+                        <ComboBoxItem Content="Charcoal" Tag="#202124" />
+                        <ComboBoxItem Content="White" Tag="#FFFFFF" />
+                        <ComboBoxItem Content="Coral" Tag="#C74645" />
+                    </ComboBox>
+                    <TextBlock Margin="14,0,7,0" VerticalAlignment="Center" Text="Background" />
+                    <ComboBox x:Name="BackgroundColor" Width="112" SelectionChanged="OnAppearanceChanged">
+                        <ComboBoxItem Content="White" Tag="#FFFFFF" IsSelected="True" />
+                        <ComboBoxItem Content="Warm gray" Tag="#E7E4DE" />
+                        <ComboBoxItem Content="Navy" Tag="#17345F" />
+                        <ComboBoxItem Content="Black" Tag="#000000" />
+                    </ComboBox>
+                    <TextBlock Margin="14,0,7,0" VerticalAlignment="Center" Text="Opacity" />
+                    <Slider x:Name="SurfaceOpacity" Width="116" Minimum="0" Maximum="100" Value="0"
+                            TickFrequency="10" ValueChanged="OnAppearanceChanged" />
+                    <TextBlock x:Name="OpacityLabel" Width="38" Margin="7,0,0,0"
+                               VerticalAlignment="Center" Text="0%" />
+                </StackPanel>
+            </DockPanel>
+        </Border>
+    </Grid>
+</Window>

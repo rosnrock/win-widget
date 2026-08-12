@@ -1,0 +1,33 @@
+## .NET build output
+[Bb]in/
+[Oo]bj/
+[Aa]rtifacts/
+
+## Visual Studio / Rider / VS Code
+.vs/
+.idea/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+## Test and coverage output
+TestResults/
+coverage/
+*.coverage
+*.coveragexml
+
+## Packaging
+AppPackages/
+PublishProfiles/
+*.appx
+*.appxbundle
+*.msix
+*.msixbundle
+
+## Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
+
