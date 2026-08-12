@@ -37,13 +37,13 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Restore
-        run: dotnet restore WinWidget.sln -r $env:RUNTIME
+        run: dotnet restore WinWidget.sln
 
       - name: Build
-        run: dotnet build WinWidget.sln --configuration $env:CONFIGURATION --no-restore -r $env:RUNTIME
+        run: dotnet build WinWidget.sln --configuration $env:CONFIGURATION --no-restore
 
       - name: Test
-        run: dotnet test WinWidget.sln --configuration $env:CONFIGURATION --no-build -r $env:RUNTIME
+        run: dotnet test WinWidget.sln --configuration $env:CONFIGURATION --no-build
 
       - name: Publish self-contained application
         run: >-
@@ -51,7 +51,6 @@ jobs:
           --configuration $env:CONFIGURATION
           --runtime $env:RUNTIME
           --self-contained true
-          --no-build
           --output $env:PUBLISH_DIR
           -p:PublishSingleFile=true
           -p:IncludeNativeLibrariesForSelfExtract=true
