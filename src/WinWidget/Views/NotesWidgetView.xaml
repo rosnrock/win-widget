@@ -14,7 +14,8 @@
                  Background="Transparent"
                  Foreground="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource AncestorType=Border}}"
                  CaretBrush="{Binding Path=(TextElement.Foreground), RelativeSource={RelativeSource AncestorType=Border}}"
-                 FontFamily="{StaticResource WidgetTextFont}" FontSize="18" FontWeight="SemiBold" LineHeight="25"
+                 FontFamily="{StaticResource WidgetTextFont}" FontSize="18" FontWeight="SemiBold"
+                 TextBlock.LineHeight="25"
                  TextChanged="OnTextChanged" />
         <Border x:Name="DragHandle" Width="48" Height="26" HorizontalAlignment="Right" VerticalAlignment="Top" Cursor="SizeAll"
                 Background="Transparent" ToolTip="Перетащить заметку"
