@@ -9,9 +9,9 @@ namespace WinWidget.Services;
 public static class WindowBehaviorService
 {
     private const int GwlExStyle = -20;
-    private const int WsExTransparent = 0x20;
-    private const int WsExToolWindow = 0x80;
-    private const int WsExNoActivate = 0x08000000;
+    private const long WsExTransparent = 0x20L;
+    private const long WsExToolWindow = 0x80L;
+    private const long WsExNoActivate = 0x08000000L;
 
     public static void ConfigureWidgetWindow(Window window)
     {
@@ -44,7 +44,7 @@ public static class WindowBehaviorService
         SetWindowLongPtr(handle, GwlExStyle, new IntPtr(style));
     }
 
-    private static void AddExtendedStyles(Window window, int styles)
+    private static void AddExtendedStyles(Window window, long styles)
     {
         var handle = new WindowInteropHelper(window).Handle;
         var current = GetWindowLongPtr(handle, GwlExStyle).ToInt64();
